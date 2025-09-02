@@ -1,95 +1,128 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+import qs from "qs";
+import { notFound } from "next/navigation";
 
-export default function Home() {
+import { fetchAPI } from "@/lib/fetch-api";
+import { getStrapiURL } from "@/lib/utils";
+import { blockRenderer } from "@/lib/block-renderer";
+import { Block } from "@/types";
+
+const homePageQuery = qs.stringify({
+  populate: {
+    blocks: {
+      on: {
+        "blocks.hero": {
+          populate: {
+            image: {
+              fields: ["url", "alternativeText"],
+            },
+            links: true,
+          },
+        },
+        "blocks.card-carousel": {
+          populate: {
+            cards: true,
+          },
+        },
+        "blocks.heading": true,
+      },
+    },
+  },
+});
+
+async function loader() {
+  // const authToken = process.env.STRAPI_API_TOKEN;
+  const BASE_URL = getStrapiURL();
+  const path = "/api/home-page";
+  const url = new URL(path, BASE_URL);
+
+  url.search = homePageQuery;
+
+  const data = await fetchAPI(url.href, {
+    method: "GET",
+  });
+
+  if (!data.data) notFound();
+
+  const blocks = data?.data?.blocks || [];
+  return { blocks };
+}
+
+export default async function HomeRoute() {
+  const data = await loader();
+  const blocks = data.blocks;
+  // console.dir(blocks, "blocks");
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>src/app/page.tsx</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+    <div>
+      {blocks.map((block: Block, index: number) => {
+        return blockRenderer(block, index);
+      })}
     </div>
   );
 }
+
+// const mockData = {
+//   heading: {
+//     id: 1,
+//     documentId: "1",
+//     subHeading: "Welcome to Coding After Thirty",
+//     heading: "Building LMS with Next.js and Strapi 5",
+//     text: "This is a project that I am currently building to use as an example and learn more on how to create Learning Management Systems.",
+//   },
+//   hero: {
+//     id: 1,
+//     documentId: "1",
+//     subHeading: "Welcome to Coding After Thirty",
+//     heading: "Building LMS with Next.js and Strapi 5",
+//     text: "This is a project that I am currently building to use as an example and learn more on how to create Learning Management Systems.",
+//     links: [
+//       {
+//         id: 1,
+//         label: "Get Started",
+//         href: "auth/signup",
+//         isExternal: false,
+//       },
+//       {
+//         id: 2,
+//         label: "Learn More",
+//         href: "/",
+//         isExternal: false,
+//       },
+//     ],
+//     image: {
+//       src: "https://images.pexels.com/photos/1820770/pexels-photo-1820770.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+//       alt: "A placeholder image",
+//       width: 600,
+//       height: 400,
+//     },
+//   },
+//   cardCarousel: {
+//     id: 1,
+//     documentId: "1",
+//     cardCarouselItems: [
+//       {
+//         id: 1,
+//         documentId: "1",
+//         heading: "Visual Builder",
+//         subHeading:
+//           "Edit HTML, Tailwind & React components with a visual builder and see your changes in real-time.",
+//         icon: "Palette",
+//       },
+//       {
+//         id: 2,
+//         documentId: "2",
+//         heading: "Interactive Learning",
+//         subHeading:
+//           "Learn through hands-on exercises and real-world projects with immediate feedback and guidance.",
+//         icon: "Download",
+//       },
+//       {
+//         id: 3,
+//         documentId: "3",
+//         heading: "Progress Tracking",
+//         subHeading:
+//           "Monitor your learning journey with detailed analytics and achievement milestones.",
+//         icon: "Sparkles",
+//       },
+//     ],
+//   },
+// };

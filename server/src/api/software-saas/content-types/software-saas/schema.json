@@ -1,0 +1,48 @@
+{
+  "kind": "collectionType",
+  "collectionName": "software_saases",
+  "info": {
+    "singularName": "software-saas",
+    "pluralName": "software-saases",
+    "displayName": "Software Saas"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string"
+    },
+    "softwareUrl": {
+      "type": "text"
+    },
+    "price": {
+      "type": "string"
+    },
+    "description": {
+      "type": "blocks"
+    },
+    "screenshots": {
+      "type": "media",
+      "multiple": true,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    },
+    "categories": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::category.category",
+      "mappedBy": "software_saas"
+    },
+    "Features": {
+      "type": "component",
+      "component": "software.features",
+      "repeatable": true
+    }
+  }
+}
